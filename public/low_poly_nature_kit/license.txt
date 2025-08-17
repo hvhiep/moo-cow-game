@@ -1,0 +1,11 @@
+Model Information:
+* title:	Nature Kit - Low-Poly (Sambaquis/Shellmound)
+* source:	https://sketchfab.com/3d-models/nature-kit-low-poly-sambaquisshellmound-1d8d48b4a43c4a5ca91915aa07f85908
+* author:	Alex Martire (https://sketchfab.com/alexmartire)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Nature Kit - Low-Poly (Sambaquis/Shellmound)" (https://sketchfab.com/3d-models/nature-kit-low-poly-sambaquisshellmound-1d8d48b4a43c4a5ca91915aa07f85908) by Alex Martire (https://sketchfab.com/alexmartire) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
