@@ -1,0 +1,11 @@
+Model Information:
+* title:	Low Poly Fence
+* source:	https://sketchfab.com/3d-models/low-poly-fence-153346c1e33843e385811a29987dfe1c
+* author:	Hallu565 (https://sketchfab.com/Hallu565)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Low Poly Fence" (https://sketchfab.com/3d-models/low-poly-fence-153346c1e33843e385811a29987dfe1c) by Hallu565 (https://sketchfab.com/Hallu565) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
