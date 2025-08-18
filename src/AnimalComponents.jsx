@@ -8,16 +8,16 @@ function useAnimalsGLTF() {
 }
 
 // Component cho từng con vật riêng biệt với props tùy chỉnh
-export function Pig({
+export function Elephant({
   position = [0, 0, 0],
   scale = [0.3, 0.3, 0.3],
   rotation = [0, 0, 0],
+  ref,
 }) {
   const { nodes } = useAnimalsGLTF();
-  const groupRef = useRef();
 
   return (
-    <group ref={groupRef} position={position} scale={scale} rotation={rotation}>
+    <group ref={ref} position={position} scale={scale} rotation={rotation}>
       {nodes["Cube"] && <primitive object={nodes["Cube"].clone()} />}
     </group>
   );
@@ -38,20 +38,20 @@ export function Sheep({
   );
 }
 
-export function Cow({
+export const Cow = ({
   position = [0, 0, 0],
   scale = [0.3, 0.3, 0.3],
   rotation = [0, 0, 0],
-}) {
+  ref,
+}) => {
   const { nodes } = useAnimalsGLTF();
-  const groupRef = useRef();
 
   return (
-    <group ref={groupRef} position={position} scale={scale} rotation={rotation}>
+    <group ref={ref} position={position} scale={scale} rotation={rotation}>
       {nodes["cow"] && <primitive object={nodes["cow"].clone()} />}
     </group>
   );
-}
+};
 
 export function Dog({
   position = [0, 0, 0],

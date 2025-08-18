@@ -1,6 +1,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Line, Text, Center } from "@react-three/drei";
-import React, { useState, useRef } from "react";
+import * as THREE from "three";
+import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import {
   Farm,
@@ -8,7 +9,7 @@ import {
   Cow,
   Sheep,
   Dog,
-  Pig,
+  Elephant,
   Chicken,
 } from "./AnimalComponents";
 import { Landscape, FinishLine, LowFence } from "./LandscapeComponents";
@@ -92,6 +93,125 @@ function AxesHelper({ size = 5 }) {
   );
 }
 
+// Component để quản lý Cow với keyboard controls
+function CowWithControls({ position = [0, 0, 0] }) {
+  const groupRef = useRef();
+  const cowRef = useRef();
+  const keysPressed = useRef({ ArrowUp: false, ArrowDown: false });
+
+  // Store initial values và bounding box
+  const initialPosition = useRef([...position]);
+  const initialScale = useRef([0.15, 0.15, 0.15]);
+  // const initialScale = useRef([0.18, 0.18, 0.18]);
+  const cowBounds = useRef(null);
+
+  // Calculate bounding box khi component mount
+  useEffect(() => {
+    if (cowRef.current) {
+      // Tính bounding box của cow model
+      const box = new THREE.Box3().setFromObject(cowRef.current);
+      cowBounds.current = {
+        height: box.max.y - box.min.y,
+        center: box.getCenter(new THREE.Vector3()),
+      };
+    }
+  }, []);
+
+  // Keyboard event listeners
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.code === "ArrowUp" || event.code === "ArrowDown") {
+        event.preventDefault();
+        keysPressed.current[event.code] = true;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (event.code === "ArrowUp" || event.code === "ArrowDown") {
+        event.preventDefault();
+        keysPressed.current[event.code] = false;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  // Smooth animation với useFrame
+  useFrame((state, delta) => {
+    if (!groupRef.current || !cowBounds.current) return;
+
+    const speed = 0.2; // Tốc độ thay đổi scale (units per second)
+    const change = speed * delta;
+
+    let newScale = {
+      x: groupRef.current.scale.x,
+      y: groupRef.current.scale.y,
+      z: groupRef.current.scale.z,
+    };
+    let hasScaleChanged = false;
+
+    if (keysPressed.current.ArrowUp) {
+      // Mũi tên lên: tăng Y, giảm X
+      const newY = Math.min(newScale.y + change, 0.3);
+      const newX = Math.max(newScale.x - change, 0.03);
+      if (newY !== newScale.y || newX !== newScale.x) {
+        newScale.y = newY;
+        newScale.x = newX;
+        hasScaleChanged = true;
+      }
+    }
+
+    if (keysPressed.current.ArrowDown) {
+      // Mũi tên xuống: giảm Y, tăng X
+      const newY = Math.max(newScale.y - change, 0.03);
+      const newX = Math.min(newScale.x + change, 0.3);
+
+      if (newY !== newScale.y || newX !== newScale.x) {
+        newScale.y = newY;
+        newScale.x = newX;
+        hasScaleChanged = true;
+      }
+    }
+
+    // Chỉ update khi có thay đổi
+    if (hasScaleChanged) {
+      // Tính toán position compensation để Cow không chìm xuống đất
+      // Khi scale thay đổi từ initialScale lên newScale, phần dưới sẽ di chuyển xuống
+      // Ta cần đẩy toàn bộ object lên để giữ chân ở mặt đất
+
+      const scaleRatio = newScale.y / initialScale.current[1]; // Tỷ lệ scale so với ban đầu
+      const originalHeight = cowBounds.current.height * initialScale.current[1];
+      const newHeight = originalHeight * scaleRatio;
+      const heightDifference = newHeight - originalHeight;
+
+      // Compensation = một nửa sự thay đổi chiều cao để giữ chân ở mặt đất
+      const positionCompensation = heightDifference / 2;
+
+      // Update scale Y
+      groupRef.current.scale.set(newScale.x, newScale.y, newScale.z);
+
+      // Update position Y để compensation
+      groupRef.current.position.y =
+        initialPosition.current[1] + positionCompensation;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={position} scale={initialScale.current}>
+      <Center>
+        <Cow ref={cowRef} position={[0, 0, 0]} rotation={[0, 0, 0]} />
+        {/* <Elephant ref={cowRef} position={[0, 0, 0]} rotation={[0, 0, 0]} /> */}
+      </Center>
+    </group>
+  );
+}
+
 // Component để quản lý animation của race track
 function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
   const landscapeRef = useRef();
@@ -108,29 +228,18 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
     { left: [3, 0, 350], right: [-17, 0, 350] }, // Cụm 1
   ]);
 
-  // Vị trí ban đầu
-  const initialPositions = useRef({
-    landscape: [0, -2, 520],
-    startLine: [0, 0, 20],
-    finishLine: [0, 0, 950],
-  });
-
   // Xử lý reset
   React.useEffect(() => {
     if (shouldReset) {
       // Reset vị trí về ban đầu
       if (landscapeRef.current) {
-        landscapeRef.current.position.set(0, 0, 0);
+        landscapeRef.current.position.set(0, -2, 520);
       }
       if (startLineRef.current) {
-        startLineRef.current.position.set(
-          ...initialPositions.current.startLine
-        );
+        startLineRef.current.position.set(0, 0, 20);
       }
       if (finishLineRef.current) {
-        finishLineRef.current.position.set(
-          ...initialPositions.current.finishLine
-        );
+        finishLineRef.current.position.set(0, 0, 950);
       }
 
       // Reset tất cả fence groups
@@ -176,8 +285,8 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
   return (
     <>
       {/* Landscape */}
-      <group ref={landscapeRef}>
-        <Center position={[0, -2, 520]}>
+      <group ref={landscapeRef} position={[0, -2, 520]}>
+        <Center position={[0, 0, 0]}>
           <Landscape
             position={[0, 0, 0]}
             scale={[0.03, 0.04, 0.9]}
@@ -187,18 +296,18 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
       </group>
 
       {/* Start Line */}
-      <group ref={startLineRef}>
+      <group ref={startLineRef} position={[0, 0, 20]}>
         <FinishLine
-          position={[0, 0, 20]}
+          position={[0, 0, 0]}
           scale={[6, 3, 2]}
           rotation={[0, 0, 0]}
         />
       </group>
 
       {/* Finish Line */}
-      <group ref={finishLineRef}>
+      <group ref={finishLineRef} position={[0, 0, 950]}>
         <FinishLine
-          position={[0, 0, 950]}
+          position={[0, 0, 0]}
           scale={[6, 3, 2]}
           rotation={[0, 0, 0]}
         />
@@ -226,6 +335,7 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
 }
 
 function Scene({ isRacing, raceSpeed, shouldReset, onResetComplete }) {
+  console.log("--[RE-RENDER][Scene]");
   return (
     <>
       <ambientLight intensity={0.6} />
@@ -234,14 +344,8 @@ function Scene({ isRacing, raceSpeed, shouldReset, onResetComplete }) {
       {/* Trục tọa độ Oxyz */}
       <AxesHelper size={1000} />
 
-      {/* Cow được center tự động tại gốc tọa độ - KHÔNG di chuyển */}
-      <Center position={[0, 3, 0]}>
-        <Cow
-          position={[0, 0, 0]}
-          scale={[0.04, 0.04, 0.04]}
-          rotation={[0, 0, 0]}
-        />
-      </Center>
+      {/* Cow với keyboard controls - KHÔNG di chuyển */}
+      <CowWithControls position={[0, 4, 0]} />
 
       {/* Race Track với animation */}
       <RaceTrack
@@ -255,6 +359,9 @@ function Scene({ isRacing, raceSpeed, shouldReset, onResetComplete }) {
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
+        // Target - điểm mà camera nhìn vào:
+        // Nhìn vào gốc tọa độ (mặc định)
+        target={[0, 0, 0]}
         maxDistance={1000}
         minDistance={0.5}
         panSpeed={2}
@@ -296,45 +403,68 @@ function App() {
           left: "20px",
           zIndex: 1000,
           display: "flex",
+          flexDirection: "column",
           gap: "10px",
         }}
       >
-        {/* Nút Start */}
-        <button
-          onClick={() => startRace(20)}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Start
-        </button>
+        {/* Controls */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          {/* Nút Start */}
+          <button
+            onClick={() => startRace(20)}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Start
+          </button>
 
-        {/* Nút Reset */}
-        <button
-          onClick={resetRace}
+          {/* Nút Reset */}
+          <button
+            onClick={resetRace}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#f44336",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Reset
+          </button>
+        </div>
+
+        {/* Hướng dẫn keyboard */}
+        <div
           style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#f44336",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
             color: "white",
-            border: "none",
+            padding: "10px",
             borderRadius: "5px",
-            cursor: "pointer",
+            fontSize: "12px",
+            maxWidth: "200px",
           }}
         >
-          Reset
-        </button>
+          <div>
+            <strong>Keyboard Controls:</strong>
+          </div>
+          <div>↑ Arrow Up: Cow cao lên (realistic growth)</div>
+          <div>↓ Arrow Down: Cow thấp xuống</div>
+        </div>
       </div>
 
       <Canvas
         camera={{
-          position: [0, 5, 10],
+          // Tọa độ đặt camera
+          position: [-30, 20, -30],
           fov: 60,
           near: 0.1,
           far: 10000,
