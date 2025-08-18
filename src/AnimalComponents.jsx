@@ -3,7 +3,7 @@ import { useRef } from "react";
 
 // Hook để load GLTF một lần và chia sẻ cho tất cả components
 function useAnimalsGLTF() {
-  const { scene, nodes } = useGLTF("/low_poly_animals/scene.gltf");
+  const { scene, nodes } = useGLTF("./low_poly_animals/scene.gltf");
   return { scene, nodes };
 }
 

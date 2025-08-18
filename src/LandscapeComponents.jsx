@@ -3,19 +3,19 @@ import { useRef } from "react";
 
 // Hook để load GLTF nature kit
 function useNatureKitGLTF() {
-  const { scene, nodes } = useGLTF("/low_poly_nature_kit/scene.gltf");
+  const { scene, nodes } = useGLTF("./low_poly_nature_kit/scene.gltf");
   return { scene, nodes };
 }
 
 // Hook để load GLTF finish line
 function useFinishLineGLTF() {
-  const { scene, nodes } = useGLTF("/finish_line/scene.gltf");
+  const { scene, nodes } = useGLTF("./finish_line/scene.gltf");
   return { scene, nodes };
 }
 
 // Hook để load GLTF fence
 function useFenceGLTF() {
-  const { scene, nodes } = useGLTF("/low_poly_fence/scene.gltf");
+  const { scene, nodes } = useGLTF("./low_poly_fence/scene.gltf");
   return { scene, nodes };
 }
 
