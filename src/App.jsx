@@ -12,7 +12,12 @@ import {
   Elephant,
   Chicken,
 } from "./AnimalComponents";
-import { Landscape, FinishLine, LowFence } from "./LandscapeComponents";
+import {
+  Landscape,
+  FinishLine,
+  LowFence,
+  HighFence,
+} from "./LandscapeComponents";
 
 // Component để hiển thị trục tọa độ Oxyz
 function AxesHelper({ size = 5 }) {
@@ -221,11 +226,31 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
 
   // Vị trí ban đầu cho 5 cụm fence (mỗi cụm có 2 fence đối xứng)
   const initialFencePositions = useRef([
-    { left: [3, 0, 70], right: [-17, 0, 70] }, // Cụm 1
-    { left: [3, 0, 140], right: [-17, 0, 140] }, // Cụm 1
-    { left: [3, 0, 210], right: [-17, 0, 210] }, // Cụm 1
-    { left: [3, 0, 280], right: [-17, 0, 280] }, // Cụm 1
-    { left: [3, 0, 350], right: [-17, 0, 350] }, // Cụm 1
+    { type: "high", pos: [0.2, -2, 70] },
+    { left: [3, 0, 140], right: [-17, 0, 140] },
+    {
+      type: "high",
+      pos: [0.2, -2, 210],
+    },
+    {
+      type: "high",
+      pos: [0.2, -2, 250],
+    },
+    { left: [3, 0, 300], right: [-17, 0, 300] },
+    {
+      type: "high",
+      pos: [0.2, -2, 370],
+    },
+    { left: [3, 0, 440], right: [-17, 0, 440] },
+    { left: [3, 0, 460], right: [-17, 0, 460] },
+    {
+      type: "high",
+      pos: [0.2, -2, 530],
+    },
+    {
+      type: "high",
+      pos: [0.2, -2, 600],
+    },
   ]);
 
   // Xử lý reset
@@ -314,22 +339,39 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
       </group>
 
       {/* 5 cụm Fence - mỗi cụm có 2 fence đối xứng */}
-      {initialFencePositions.current.map((fenceGroup, index) => (
-        <group key={index} ref={(el) => (fenceGroupsRef.current[index] = el)}>
-          {/* Fence bên trái */}
-          <LowFence
-            position={fenceGroup.left}
-            scale={[0.02, 0.02, 0.02]}
-            rotation={[0, 0, 0]}
-          />
-          {/* Fence bên phải */}
-          <LowFence
-            position={fenceGroup.right}
-            scale={[0.02, 0.02, 0.02]}
-            rotation={[0, 0, 0]}
-          />
-        </group>
-      ))}
+      {initialFencePositions.current.map((fenceGroup, index) => {
+        if (fenceGroup.type === "high") {
+          return (
+            <group
+              key={index}
+              ref={(el) => (fenceGroupsRef.current[index] = el)}
+            >
+              <HighFence
+                position={fenceGroup.pos}
+                scale={[0.3, 0.15, 0.2]}
+                rotation={[0, 0, 0]}
+              />
+            </group>
+          );
+        }
+
+        return (
+          <group key={index} ref={(el) => (fenceGroupsRef.current[index] = el)}>
+            {/* Fence bên trái */}
+            <LowFence
+              position={fenceGroup.left}
+              scale={[0.02, 0.02, 0.02]}
+              rotation={[0, 0, 0]}
+            />
+            {/* Fence bên phải */}
+            <LowFence
+              position={fenceGroup.right}
+              scale={[0.02, 0.02, 0.02]}
+              rotation={[0, 0, 0]}
+            />
+          </group>
+        );
+      })}
     </>
   );
 }

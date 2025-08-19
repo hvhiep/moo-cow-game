@@ -19,6 +19,11 @@ function useFenceGLTF() {
   return { scene, nodes };
 }
 
+function useHighFenceGLTF() {
+  const { scene, nodes } = useGLTF("./low_poly_high_fence/scene.gltf");
+  return { scene, nodes };
+}
+
 // Component Landscape với mô hình Solo_Gramado
 export function Landscape({
   position = [0, -2, 0],
@@ -60,6 +65,21 @@ export function LowFence({
   rotation = [0, 0, 0],
 }) {
   const { scene } = useFenceGLTF();
+  const groupRef = useRef();
+
+  return (
+    <group ref={groupRef} position={position} scale={scale} rotation={rotation}>
+      <primitive object={scene.clone()} />
+    </group>
+  );
+}
+
+export function HighFence({
+  position = [0, 0, 0],
+  scale = [1, 1, 1],
+  rotation = [0, 0, 0],
+}) {
+  const { scene } = useHighFenceGLTF();
   const groupRef = useRef();
 
   return (
