@@ -1,0 +1,11 @@
+Model Information:
+* title:	Low-Poly Fence
+* source:	https://sketchfab.com/3d-models/low-poly-fence-7af608be40ca42488843463fb8c80e4a
+* author:	dvnc.tech (https://sketchfab.com/dvnc.tech)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Low-Poly Fence" (https://sketchfab.com/3d-models/low-poly-fence-7af608be40ca42488843463fb8c80e4a) by dvnc.tech (https://sketchfab.com/dvnc.tech) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
