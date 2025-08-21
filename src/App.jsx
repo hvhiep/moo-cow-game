@@ -98,11 +98,17 @@ function AxesHelper({ size = 5 }) {
   );
 }
 
-// Component để quản lý Cow với keyboard controls
-function CowWithControls({ position = [0, 0, 0] }) {
+// Component để quản lý Cow với button controls
+function CowWithControls({
+  position = [0, 0, 0],
+  scaleUp,
+  scaleDown,
+  shouldResetScale,
+}) {
   const groupRef = useRef();
   const cowRef = useRef();
-  const keysPressed = useRef({ ArrowUp: false, ArrowDown: false });
+  const isScalingUp = useRef(false);
+  const isScalingDown = useRef(false);
 
   // Store initial values và bounding box
   const initialPosition = useRef([...position]);
@@ -122,30 +128,32 @@ function CowWithControls({ position = [0, 0, 0] }) {
     }
   }, []);
 
-  // Keyboard event listeners
+  // Update scaling state when props change
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code === "ArrowUp" || event.code === "ArrowDown") {
-        event.preventDefault();
-        keysPressed.current[event.code] = true;
-      }
-    };
+    isScalingUp.current = scaleUp;
+  }, [scaleUp]);
 
-    const handleKeyUp = (event) => {
-      if (event.code === "ArrowUp" || event.code === "ArrowDown") {
-        event.preventDefault();
-        keysPressed.current[event.code] = false;
-      }
-    };
+  useEffect(() => {
+    isScalingDown.current = scaleDown;
+  }, [scaleDown]);
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
+  // Reset scale when shouldResetScale is true
+  useEffect(() => {
+    if (shouldResetScale && groupRef.current) {
+      // Reset scale về giá trị ban đầu
+      groupRef.current.scale.set(
+        initialScale.current[0],
+        initialScale.current[1],
+        initialScale.current[2]
+      );
+      // Reset position về vị trí ban đầu
+      groupRef.current.position.set(
+        initialPosition.current[0],
+        initialPosition.current[1],
+        initialPosition.current[2]
+      );
+    }
+  }, [shouldResetScale]);
 
   // Smooth animation với useFrame
   useFrame((state, delta) => {
@@ -161,8 +169,8 @@ function CowWithControls({ position = [0, 0, 0] }) {
     };
     let hasScaleChanged = false;
 
-    if (keysPressed.current.ArrowUp) {
-      // Mũi tên lên: tăng Y, giảm X
+    if (isScalingUp.current) {
+      // Button Up: tăng Y, giảm X
       const newY = Math.min(newScale.y + change, 0.3);
       const newX = Math.max(newScale.x - change, 0.03);
       if (newY !== newScale.y || newX !== newScale.x) {
@@ -172,8 +180,8 @@ function CowWithControls({ position = [0, 0, 0] }) {
       }
     }
 
-    if (keysPressed.current.ArrowDown) {
-      // Mũi tên xuống: giảm Y, tăng X
+    if (isScalingDown.current) {
+      // Button Down: giảm Y, tăng X
       const newY = Math.max(newScale.y - change, 0.03);
       const newX = Math.min(newScale.x + change, 0.3);
 
@@ -376,7 +384,15 @@ function RaceTrack({ isRacing, speed = 10, shouldReset, onResetComplete }) {
   );
 }
 
-function Scene({ isRacing, raceSpeed, shouldReset, onResetComplete }) {
+function Scene({
+  isRacing,
+  raceSpeed,
+  shouldReset,
+  onResetComplete,
+  isScaleUp,
+  isScaleDown,
+  shouldResetScale,
+}) {
   console.log("--[RE-RENDER][Scene]");
   return (
     <>
@@ -386,8 +402,13 @@ function Scene({ isRacing, raceSpeed, shouldReset, onResetComplete }) {
       {/* Trục tọa độ Oxyz */}
       <AxesHelper size={1000} />
 
-      {/* Cow với keyboard controls - KHÔNG di chuyển */}
-      <CowWithControls position={[0, 4, 0]} />
+      {/* Cow với button controls - KHÔNG di chuyển */}
+      <CowWithControls
+        position={[0, 4, 0]}
+        scaleUp={isScaleUp}
+        scaleDown={isScaleDown}
+        shouldResetScale={shouldResetScale}
+      />
 
       {/* Race Track với animation */}
       <RaceTrack
@@ -417,6 +438,9 @@ function App() {
   const [isRacing, setIsRacing] = useState(false);
   const [raceSpeed, setRaceSpeed] = useState(50);
   const [shouldReset, setShouldReset] = useState(false);
+  const [isScaleUp, setIsScaleUp] = useState(false);
+  const [isScaleDown, setIsScaleDown] = useState(false);
+  const [shouldResetScale, setShouldResetScale] = useState(false);
 
   // Hàm startRace
   const startRace = (speed = 20) => {
@@ -428,11 +452,13 @@ function App() {
   const resetRace = () => {
     setIsRacing(false);
     setShouldReset(true);
+    setShouldResetScale(true);
   };
 
   // Callback khi reset hoàn thành
   const handleResetComplete = () => {
     setShouldReset(false);
+    setShouldResetScale(false);
   };
 
   return (
@@ -484,7 +510,46 @@ function App() {
           </button>
         </div>
 
-        {/* Hướng dẫn keyboard */}
+        {/* Scale Controls */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          {/* Nút Up */}
+          <button
+            onMouseDown={() => setIsScaleUp(true)}
+            onMouseUp={() => setIsScaleUp(false)}
+            onMouseLeave={() => setIsScaleUp(false)}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#2196F3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Up ↑
+          </button>
+
+          {/* Nút Down */}
+          <button
+            onMouseDown={() => setIsScaleDown(true)}
+            onMouseUp={() => setIsScaleDown(false)}
+            onMouseLeave={() => setIsScaleDown(false)}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#FF9800",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Down ↓
+          </button>
+        </div>
+
+        {/* Hướng dẫn button controls */}
         <div
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -496,10 +561,13 @@ function App() {
           }}
         >
           <div>
-            <strong>Keyboard Controls:</strong>
+            <strong>Button Controls:</strong>
           </div>
-          <div>↑ Arrow Up: Cow cao lên (realistic growth)</div>
-          <div>↓ Arrow Down: Cow thấp xuống</div>
+          <div>↑ Up Button: Cow cao lên (realistic growth)</div>
+          <div>↓ Down Button: Cow thấp xuống</div>
+          <div style={{ marginTop: "5px", fontSize: "11px", color: "#ccc" }}>
+            Nhấn và giữ button để thay đổi liên tục
+          </div>
         </div>
       </div>
 
@@ -520,6 +588,9 @@ function App() {
           isRacing={isRacing}
           raceSpeed={raceSpeed}
           shouldReset={shouldReset}
+          isScaleUp={isScaleUp}
+          isScaleDown={isScaleDown}
+          shouldResetScale={shouldResetScale}
           onResetComplete={handleResetComplete}
         />
       </Canvas>
